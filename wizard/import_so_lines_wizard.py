@@ -55,6 +55,6 @@ class ImportSOLinesWizard(models.TransientModel):
                 'name': product.name,
                 'product_uom_qty': qty,
                 'price_unit': price,
-                'product_uom': product.uom_id.id,
+                'product_uom_id': product.uom_id.id,
             })
         return {'type': 'ir.actions.act_window_close'}
