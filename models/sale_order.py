@@ -1,5 +1,14 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
+import io
+import base64
+
+try:
+    import openpyxl
+    from openpyxl import Workbook
+except ImportError:
+    raise UserError("Library openpyxl belum terinstall. Jalankan: pip install openpyxl")
+
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -14,8 +23,8 @@ class SaleOrder(models.Model):
         for order in self:
             if order.no_kontrak:
                 found = self.env['sale.order'].search([
-                    ('no_kontrak','=', order.no_kontrak),
-                    ('id','!=', order.id)
+                    ('no_kontrak', '=', order.no_kontrak),
+                    ('id', '!=', order.id)
                 ], limit=1)
                 if found:
                     raise ValidationError(_('No Kontrak sudah pernah diinputkan sebelumnya…!'))
@@ -46,7 +55,7 @@ class SaleOrder(models.Model):
                     'name': line.name,
                     'product_qty': line.product_uom_qty,
                     'price_unit': line.price_unit,
-                    'product_uom_id': line.product_uom_id.id,
+                    'product_uom_id': line.product_uom_id.id,  
                 })
 
             order.write({'purchase_order_ids': [(4, po.id)]})
@@ -64,7 +73,42 @@ class SaleOrder(models.Model):
             'context': {'default_filename': 'template_import.xlsx', 'active_id': self.id},
         }
 
-# Inherit Purchase Order to add link back to Sale Order
+    # method untuk download Excel template
+    def download_so_lines_template(self):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "SO Lines Template"
+
+        # Header
+        ws.append(['Product Code', 'Quantity', 'Unit Price'])
+
+        # Contoh baris opsional
+        ws.append(['PROD001', 1, 10000])
+        ws.append(['PROD002', 5, 50000])
+
+        # Simpan ke binary
+        file_stream = io.BytesIO()
+        wb.save(file_stream)
+        file_stream.seek(0)
+        file_data = base64.b64encode(file_stream.read())
+
+        # Buat attachment sementara untuk download
+        attachment = self.env['ir.attachment'].create({
+            'name': 'SO_Lines_Template.xlsx',
+            'type': 'binary',
+            'datas': file_data,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+
+        # Return action download
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=true' % attachment.id,
+            'target': 'self',
+        }
+
+
+# Inherit Purchase Order untuk link back ke Sale Order
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 

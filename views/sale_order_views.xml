@@ -58,6 +58,10 @@
                         string="Import SO Lines"
                         type="object"
                         class="btn-secondary"/>
+                <button name="download_so_lines_template"
+                        string="Download Template"
+                        type="object"
+                        class="btn btn-secondary"/>
                 
             </xpath>
 
