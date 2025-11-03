@@ -1,0 +1,65 @@
+<odoo>
+    <!-- =============================
+         List view default untuk Purchase Orders
+         ============================= -->
+    <record id="purchase_order_tree_default" model="ir.ui.view">
+        <field name="name">purchase.order.list.custom</field>
+        <field name="model">purchase.order</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =============================
+         Inherit Form Sale Order
+         ============================= -->
+    <record id="view_order_form_inherit_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Tambah Request Vendor setelah Customer -->
+            <xpath expr="//group/field[@name='payment_term_id']" position="after">
+              <group>
+                <field name="request_vendor_id"
+                       options="{'no_quick_create': True}"
+                       placeholder="Request Vendor"/>
+                <field name="no_kontrak"/>
+              </group>
+            </xpath>
+
+            <!-- Tambah No Kontrak dan With PO sebelum Order Lines -->
+            <xpath expr="//group/field[@name='sale_order_template_id']" position="after">
+                <field name="with_po"/>
+            </xpath>
+
+            <!-- Tambah Notebook Page "Purchase Orders" setelah Order Lines -->
+            <xpath expr="//sheet/notebook/page[@name='order_lines']" position="after">
+                <page string="Purchase Orders" name="purchase_orders">
+                    <!-- Gunakan mode list,form sesuai Odoo 19 -->
+                    <field name="purchase_order_ids" context="{'default_origin': name}" mode="list,form"/>
+                </page>
+            </xpath>
+
+            <!-- Tombol Create PO & Import SO Lines di Header -->
+            <xpath expr="//header/button[@name='action_preview_sale_order']" position="after">
+               
+                <button name="action_create_po_from_so"
+                        string="Create PO"
+                        type="object"
+                        class="btn-secondary"/>
+                <button name="open_import_so_lines_wizard"
+                        string="Import SO Lines"
+                        type="object"
+                        class="btn-secondary"/>
+                
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
