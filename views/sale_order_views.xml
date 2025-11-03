@@ -52,7 +52,8 @@
                 <button name="action_create_po_from_so"
                         string="Create PO"
                         type="object"
-                        class="btn-secondary"/>
+                        class="btn-secondary"
+                        invisible="not with_po"/>
                 <button name="open_import_so_lines_wizard"
                         string="Import SO Lines"
                         type="object"
